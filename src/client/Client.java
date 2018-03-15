@@ -12,6 +12,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
 
+import javax.swing.JFrame;
+
 import server.Message;
 
 public class Client extends Thread
@@ -20,7 +22,7 @@ public class Client extends Thread
 	private Socket socket;
 	private int portMin = 4473;
 	private int portMax = 4483;
-	private String IP = "81.225.239.63";
+	private String IP = "localhost";
 	
 	// Objects
 	private ObjectOutputStream outToServer;
@@ -28,7 +30,7 @@ public class Client extends Thread
 	
 	// Messages
 	private Message receivedMessage;
-	private LinkedList<Message> MessageToSend;
+	private LinkedList<Message> MessageToSend = new LinkedList<Message>();
 	private String recipient;
 	
 	// Other
@@ -43,6 +45,8 @@ public class Client extends Thread
 	
 	public void initiate()
 	{
+		ui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		ui.setVisible(true);
 		boolean tryingToCreateSocket = true;
 		int port = portMin;
 		while (tryingToCreateSocket)
@@ -84,7 +88,7 @@ public class Client extends Thread
 		}
 		
 		System.out.println("Connections and streams set up, attempting to sign in");
-		MessageToSend.add(new Message(null, null, ui.getUserName(), null, null));
+		MessageToSend.addFirst((new Message(null, null, ui.getUserName(), null, null)));
 		
 	}
 	
@@ -97,13 +101,16 @@ public class Client extends Thread
 			try
 			{
 				// Receiving
+				System.out.println("Trying to recieve message");
 				receivedMessage = (Message) inFromServer.readObject();
+				System.out.println("Recieved message");
 				updateTextFile(receivedMessage.getTo(), receivedMessage.getText());
 				setUsers(receivedMessage.getUsers());
 				
 				// Sending
 				if (!MessageToSend.isEmpty())
 				{
+					System.out.println("Message sent!");
 					outToServer.writeObject(MessageToSend.removeFirst());
 				}
 			}
@@ -153,6 +160,7 @@ public class Client extends Thread
 	{
 		try
 		{
+			System.out.println("Updating text file files/friends/"+recipient+".txt" );
 			writer = new PrintWriter("files/friends/" + recipient + ".txt");
 			writer.print(text);
 			

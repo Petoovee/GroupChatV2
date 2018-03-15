@@ -42,7 +42,7 @@ public class ClientUI extends JFrame
 	 */
 	public ClientUI()
 	{
-		
+		System.out.println("Ui starting");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 658, 565);
 		setContentPane(contentPane);
