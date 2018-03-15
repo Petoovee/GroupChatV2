@@ -3,6 +3,7 @@ package server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.LinkedList;
 
 public class Server
 {
@@ -13,6 +14,7 @@ public class Server
 	
 	private ServerSocket serverSocket;
 	private Socket socket;
+	private LinkedList<ClientHandler> clientHandlers = new LinkedList<ClientHandler>();
 	
 	public void initiate()
 	{
@@ -49,6 +51,8 @@ public class Server
 			try
 			{
 				socket = serverSocket.accept();
+				System.out.println("Socket accepted, handing over to handler");
+				clientHandlers.add(new ClientHandler(socket));
 			}
 			catch (IOException e)
 			{
