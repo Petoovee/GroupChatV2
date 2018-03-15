@@ -1,4 +1,4 @@
-package groupChat;
+package client;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -12,6 +12,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
 
+import server.Message;
+
 public class Client extends Thread
 {
 	// Connection info
@@ -22,7 +24,7 @@ public class Client extends Thread
 	
 	// Objects
 	private ObjectOutputStream outToServer;
-	private ObjectInputStream inToClient;
+	private ObjectInputStream inFromServer;
 	
 	// Messages
 	private Message receivedMessage;
@@ -41,15 +43,15 @@ public class Client extends Thread
 	
 	public void initiate()
 	{
-		boolean tryingToConnect = true;
+		boolean tryingToCreateSocket = true;
 		int port = portMin;
-		while (tryingToConnect)
+		while (tryingToCreateSocket)
 		{
 			try
 			{
 				socket = new Socket(IP, port);
 				System.out.println("Connected to " + IP + " at " + port);
-				tryingToConnect = false;
+				tryingToCreateSocket = false;
 			}
 			catch (UnknownHostException e)
 			{
@@ -64,16 +66,25 @@ public class Client extends Thread
 			}
 		}
 		
-		try
+		boolean tryingToEstablishStreams = true;
+		while (tryingToEstablishStreams)
 		{
-			outToServer = new ObjectOutputStream(socket.getOutputStream());
-			inToClient = new ObjectInputStream(socket.getInputStream());
+			try
+			{
+				outToServer = new ObjectOutputStream(socket.getOutputStream());
+				inFromServer = new ObjectInputStream(socket.getInputStream());
+				tryingToEstablishStreams = false;
+			}
+			catch (IOException e)
+			{
+				System.out.println("Input/Output streams failed!");
+				e.printStackTrace();
+			}
 		}
-		catch (IOException e)
-		{
-			System.out.println("Input/Output streams failed!");
-			e.printStackTrace();
-		}
+		
+		System.out.println("Connections and streams set up, attempting to sign in");
+		MessageToSend.add(new Message(null, null, ui.getUserName(), null, null));
+		
 	}
 	
 	public void run()
@@ -85,8 +96,8 @@ public class Client extends Thread
 			try
 			{
 				// Receiving
-				receivedMessage = (Message) inToClient.readObject();
-				updateTextFile(receivedMessage.getTo(),receivedMessage.getText());
+				receivedMessage = (Message) inFromServer.readObject();
+				updateTextFile(receivedMessage.getTo(), receivedMessage.getText());
 				setUsers(receivedMessage.getUsers());
 				
 				// Sending
@@ -94,7 +105,6 @@ public class Client extends Thread
 				{
 					outToServer.writeObject(MessageToSend.removeFirst());
 				}
-				
 			}
 			catch (ClassNotFoundException | IOException e)
 			{
@@ -112,7 +122,7 @@ public class Client extends Thread
 	{
 		text = text.replace("/add ", "");
 		
-		File file = new File("files/friends/" + text + ".txt");
+		File file = new File("files/" +ui.getUserName() +"/friends/" + text + ".txt");
 		if (!file.exists())
 		{
 			try
@@ -127,10 +137,10 @@ public class Client extends Thread
 		}
 		ui.updateContacts();
 	}
-
+	
 	public void removeFriend(String text)
 	{
-		File file = new File("files/friends/" + text + ".txt");
+		File file = new File("files/" +ui.getUserName() +"/friends/" + text + ".txt");
 		if (file.exists())
 		{
 			file.delete();
@@ -166,15 +176,17 @@ public class Client extends Thread
 		String text = new String();
 		try
 		{
-		BufferedReader bufferedReader = new BufferedReader(new FileReader(new File("files/friends/" + newRecipient + ".txt")));
-		for (String line; (line = bufferedReader.readLine()) != null; text += line);
+			BufferedReader bufferedReader = new BufferedReader(
+					new FileReader(new File("files/" +ui.getUserName() +"/friends/" + newRecipient + ".txt")));
+			for (String line; (line = bufferedReader.readLine()) != null; text += line)
+				;
 			bufferedReader.close();
 		}
 		catch (IOException e)
 		{
 			System.out.println("Failed reading newRecipient chat");
 		}
-
+		
 		ui.updateChat(text);
 	}
 	

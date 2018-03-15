@@ -1,26 +1,25 @@
-package groupChat;
+package server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.Socket;
 
-public class ServerThread extends Thread
+public class Server
 {
+	// Connection info
 	private int portMin = 4473;
 	private int portMax = 4483;
 	private int port = portMin;
-	private boolean attemptingToStart = true;
-	Socket socket;
-	ServerSocket serverSocket;
 	
-	public void run()
+	public void initiate()
 	{
-		while (attemptingToStart)
+		boolean tryingToCreateSocket = true;
+		while (tryingToCreateSocket)
 		{
 			try
 			{
 				ServerSocket serverSocket = new ServerSocket(port);
-				System.out.println("Server started.");
+				System.out.println("Server started on port " +port);
+				tryingToCreateSocket = false;
 			}
 			catch (IOException e)
 			{
@@ -35,17 +34,23 @@ public class ServerThread extends Thread
 				}
 			}
 		}
+	}
+	
+	public void run()
+	{
+		initiate();
 		
 		while (!Thread.interrupted())
 		{
 			try
 			{
 				socket = serverSocket.accept();
-				Clients.add(socket);
+				establishStreams(socket);
+				
 			}
 			catch (IOException e)
 			{
-				System.out.println("Accept failed on port");
+				System.out.println("Accept failed! Message lost!");
 			}
 			
 		}

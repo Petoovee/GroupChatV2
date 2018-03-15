@@ -1,4 +1,4 @@
-package groupChat;
+package client;
 
 import java.awt.Label;
 import java.awt.TextArea;
@@ -134,7 +134,7 @@ public class ClientUI extends JFrame
 	
 	public void updateContacts()
 	{
-		File friendsFolder = new File("files/friends");
+		File friendsFolder = new File("files/" +getUserName() +"/friends");
 		File[] listOfFriends = friendsFolder.listFiles();
 		contactList.setText("");
 
