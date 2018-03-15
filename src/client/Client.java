@@ -85,31 +85,13 @@ public class Client extends Thread
 	
 	private void establishStreams()
 	{
-		boolean tryingToEstablishStreams = true;
-		while (tryingToEstablishStreams)
-		{
-			try
-			{
-				outToServer = new ObjectOutputStream(socket.getOutputStream());
-				inFromServer = new ObjectInputStream(socket.getInputStream());
-				System.out.println("Streams established");
-				
-				outputStream = new Outgoing(outToServer, this);
-				outputStream.start();
-				System.out.println("OutputThread started");
-				
-				inputStream = new Incoming(inFromServer, this);
-				inputStream.start();
-				System.out.println("InputThread started");
-				
-				tryingToEstablishStreams = false;
-			}
-			catch (IOException e)
-			{
-				System.out.println("Input/Output streams failed!");
-				e.printStackTrace();
-			}
-		}
+		System.out.println("Trying to establish streams");
+		
+		outputStream = new Outgoing(socket, this);
+		outputStream.start();
+		
+		inputStream = new Incoming(socket, this);
+		inputStream.start();
 	}
 	
 	public void run()
