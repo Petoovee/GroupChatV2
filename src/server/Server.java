@@ -2,6 +2,7 @@ package server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.Socket;
 
 public class Server
 {
@@ -10,6 +11,9 @@ public class Server
 	private int portMax = 4483;
 	private int port = portMin;
 	
+	private ServerSocket serverSocket;
+	private Socket socket;
+	
 	public void initiate()
 	{
 		boolean tryingToCreateSocket = true;
@@ -17,7 +21,7 @@ public class Server
 		{
 			try
 			{
-				ServerSocket serverSocket = new ServerSocket(port);
+				serverSocket = new ServerSocket(port);
 				System.out.println("Server started on port " +port);
 				tryingToCreateSocket = false;
 			}
@@ -40,13 +44,11 @@ public class Server
 	{
 		initiate();
 		
-		while (!Thread.interrupted())
+		while (true)
 		{
 			try
 			{
 				socket = serverSocket.accept();
-				establishStreams(socket);
-				
 			}
 			catch (IOException e)
 			{
@@ -54,5 +56,11 @@ public class Server
 			}
 			
 		}
+	}
+	
+	public static void main(String[] args)
+	{
+		Server server = new Server();
+		server.run();
 	}
 }

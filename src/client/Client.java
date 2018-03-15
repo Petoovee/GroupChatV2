@@ -49,8 +49,9 @@ public class Client extends Thread
 		{
 			try
 			{
+				System.out.println("Connecting to " + IP + " at " + port);
 				socket = new Socket(IP, port);
-				System.out.println("Connected to " + IP + " at " + port);
+				System.out.println("Connected!");
 				tryingToCreateSocket = false;
 			}
 			catch (UnknownHostException e)
