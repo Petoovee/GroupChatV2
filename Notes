@@ -1,0 +1,3 @@
+ObjectOutputStream serializes everything passing through, meaning that it transforms the objects into a series of bits. ObjectInputStream then deserializes the bits back into the object.
+
+Serializable means that the class in question can handle doing so. For our intents and purposes, this can be decided by cheching if all the inner objects implement Serializable
