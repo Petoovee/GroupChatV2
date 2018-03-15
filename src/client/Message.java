@@ -30,6 +30,11 @@ public class Message
 		return from;
 	}
 	
+	public void setUsers(LinkedList<String> users)
+	{
+		this.users = users;
+	}
+	
 	public LinkedList<String> getUsers()
 	{
 		return users;

@@ -22,9 +22,11 @@ public class ClientHandler extends Thread
 	// Messages
 	private LinkedList<Message> MessageToSend;
 	private LinkedList<Message> oldMessagesToSend;
+	private LinkedList<String> users; // All users
 	private Message receivedMessage;
 	private Message currentMessageToSend;
-	private String user;
+	private String user; // Current user
+	private String filepath = "files/clients/";
 	
 	// Connection info
 	Socket socket;
@@ -79,7 +81,7 @@ public class ClientHandler extends Thread
 		}
 		
 		// If needed, create a new file for the client
-		File file = new File("files/" + user + ".txt");
+		File file = new File(filepath + user + ".txt");
 		if (!file.exists())
 		{
 			try
@@ -111,6 +113,7 @@ public class ClientHandler extends Thread
 				if (!MessageToSend.isEmpty())
 				{
 					currentMessageToSend = MessageToSend.removeFirst();
+					currentMessageToSend.setUsers(getUsers());
 					outToClient.writeObject(currentMessageToSend);
 				}
 				
@@ -132,7 +135,7 @@ public class ClientHandler extends Thread
 		oldMessagesToSend.clear();
 		
 		// Prepare the file if necessary
-		File file = new File("files/" + user + ".txt");
+		File file = new File(filepath + user + ".txt");
 		if (!file.exists())
 		{
 			try
@@ -150,7 +153,7 @@ public class ClientHandler extends Thread
 		BufferedReader bufferedReader;
 		try
 		{
-			bufferedReader = new BufferedReader(new FileReader(new File("files/" + user + ".txt")));
+			bufferedReader = new BufferedReader(new FileReader(new File(filepath + user + ".txt")));
 			for (String line; (line = bufferedReader.readLine()) != null;)
 			{
 				String[] messageBuilder = line.split(",!,");
@@ -183,7 +186,7 @@ public class ClientHandler extends Thread
 				// Save old messages again
 				try
 				{
-					writer = new PrintWriter("files/" + oldMessagesToSend.get(i).getTo() + ".txt");
+					writer = new PrintWriter(filepath + oldMessagesToSend.get(i).getTo() + ".txt");
 					writer.println(messageBuilder);
 				}
 				catch (FileNotFoundException e)
@@ -200,7 +203,7 @@ public class ClientHandler extends Thread
 				messageBuilder += message.getTo() + ",!,";
 				messageBuilder += message.getFrom() + ",!,";
 				messageBuilder += "null";
-				writer = new PrintWriter("files/" + message.getTo() + ".txt");
+				writer = new PrintWriter(filepath + message.getTo() + ".txt");
 				writer.println(messageBuilder);
 			}
 			catch (FileNotFoundException e)
@@ -217,6 +220,22 @@ public class ClientHandler extends Thread
 		{
 			MessageToSend.add(oldMessagesToSend.get(i));
 		}
+	}
+	
+	public LinkedList<String> getUsers()
+	{
+		File clientsFolder = new File(filepath);
+		File[] listOfUsers = clientsFolder.listFiles();
+		users = new LinkedList<String>();
+
+		for (int i = 0; i < listOfUsers.length; i++)
+		{
+			if (listOfUsers[i].isFile() && listOfUsers[i].getName().contains(".txt"))
+			{
+				users.add(listOfUsers[i].getName().replace(".txt", "") +"\n");
+			}
+		}
+		return users;
 	}
 	
 	public void sleep() // If no purpose in life is found, sleep
