@@ -1,10 +1,15 @@
 package server;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.LinkedList;
 
-public class Message
+public class Message implements Serializable
 {
+	/*
+	 *  All objects are serializable in this class.
+	 */
+	
 	private String text;
 	private String to;
 	private String from;
