@@ -37,36 +37,35 @@ public class ClientHandler extends Thread
 	
 	public ClientHandler() // If we don't have any socket to give
 	{
-		run();
 	}
 	
 	public ClientHandler(Socket socket) // If a handlerless client is found
 	{
 		this.socket = socket;
-		run();
 	}
 	
 	public ClientHandler(String user) // If a user has no connection
 	{
 		this.user = user;
-		run();
 	}
 	
 	public ClientHandler(Socket socket, String user) // If we by sheer luck happen to have both
 	{
 		this.socket = socket;
 		this.user = user;
-		run();
 	}
 	
 	public void initiate() // Used to avoid cluttering the loop
 	{
 		establishStreams(socket);
 		
-		// Wait for users name, should be first message - overwrite even if we already have their name, why not
+		// Wait for users name, should be first message - overwrite even if we already
+		// have their name, why not
+		System.out.println("Trying to receive initial message");
 		try
 		{
 			receivedMessage = (Message) inFromClient.readObject();
+			System.out.println("Initial message received");
 		}
 		catch (ClassNotFoundException | IOException e)
 		{
@@ -167,7 +166,8 @@ public class ClientHandler extends Thread
 		}
 	}
 	
-	public synchronized void saveOfflineMessage(Message message) // Reads all the old messages and saves them, including the last message
+	public synchronized void saveOfflineMessage(Message message) // Reads all the old messages and saves them, including
+																	// the last message
 	{
 		readOfflineMessages();
 		oldMessagesToSend.add(message);
@@ -213,10 +213,10 @@ public class ClientHandler extends Thread
 		}
 	}
 	
-	public void sendOldMessage() //Reads the old messages into the message queue
+	public void sendOldMessage() // Reads the old messages into the message queue
 	{
 		readOfflineMessages();
-		for(int i = 0; i < oldMessagesToSend.size(); i++)
+		for (int i = 0; i < oldMessagesToSend.size(); i++)
 		{
 			MessageToSend.add(oldMessagesToSend.get(i));
 		}
@@ -227,12 +227,12 @@ public class ClientHandler extends Thread
 		File clientsFolder = new File(filepath);
 		File[] listOfUsers = clientsFolder.listFiles();
 		users = new LinkedList<String>();
-
+		
 		for (int i = 0; i < listOfUsers.length; i++)
 		{
 			if (listOfUsers[i].isFile() && listOfUsers[i].getName().contains(".txt"))
 			{
-				users.add(listOfUsers[i].getName().replace(".txt", "") +"\n");
+				users.add(listOfUsers[i].getName().replace(".txt", "") + "\n");
 			}
 		}
 		return users;

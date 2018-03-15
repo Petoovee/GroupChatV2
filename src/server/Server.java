@@ -5,12 +5,15 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
 
+import client.Incoming;
+
 public class Server
 {
 	// Connection info
 	private int portMin = 4473;
 	private int portMax = 4483;
 	private int port = portMin;
+	private Incoming inputStream;
 	
 	private ServerSocket serverSocket;
 	private Socket socket;

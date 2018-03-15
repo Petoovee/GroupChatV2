@@ -27,10 +27,9 @@ public class Client extends Thread
 	// Objects
 	private ObjectOutputStream outToServer;
 	private ObjectInputStream inFromServer;
+	private Incoming inputStream;
+	private Outgoing outputStream;
 	
-	// Messages
-	private Message receivedMessage;
-	private LinkedList<Message> MessageToSend = new LinkedList<Message>();
 	private String recipient;
 	
 	// Other
@@ -47,6 +46,19 @@ public class Client extends Thread
 	{
 		ui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		ui.setVisible(true);
+		
+		createSocket();
+		System.out.println("Connected!");
+		
+		establishStreams();
+		System.out.println("Streams set up, attempting to sign in");
+		
+		outputStream.addMessage((new Message(null, null, ui.getUserName(), null, null)));
+		
+	}
+	
+	private void createSocket()
+	{
 		boolean tryingToCreateSocket = true;
 		int port = portMin;
 		while (tryingToCreateSocket)
@@ -55,7 +67,6 @@ public class Client extends Thread
 			{
 				System.out.println("Connecting to " + IP + " at " + port);
 				socket = new Socket(IP, port);
-				System.out.println("Connected!");
 				tryingToCreateSocket = false;
 			}
 			catch (UnknownHostException e)
@@ -70,7 +81,10 @@ public class Client extends Thread
 				e.printStackTrace();
 			}
 		}
-		
+	}
+	
+	private void establishStreams()
+	{
 		boolean tryingToEstablishStreams = true;
 		while (tryingToEstablishStreams)
 		{
@@ -78,6 +92,16 @@ public class Client extends Thread
 			{
 				outToServer = new ObjectOutputStream(socket.getOutputStream());
 				inFromServer = new ObjectInputStream(socket.getInputStream());
+				System.out.println("Streams established");
+				
+				outputStream = new Outgoing(outToServer, this);
+				outputStream.start();
+				System.out.println("OutputThread started");
+				
+				inputStream = new Incoming(inFromServer, this);
+				inputStream.start();
+				System.out.println("InputThread started");
+				
 				tryingToEstablishStreams = false;
 			}
 			catch (IOException e)
@@ -86,10 +110,6 @@ public class Client extends Thread
 				e.printStackTrace();
 			}
 		}
-		
-		System.out.println("Connections and streams set up, attempting to sign in");
-		MessageToSend.addFirst((new Message(null, null, ui.getUserName(), null, null)));
-		
 	}
 	
 	public void run()
@@ -100,28 +120,16 @@ public class Client extends Thread
 		{
 			try
 			{
-				// Receiving
-				System.out.println("Trying to recieve message");
-				receivedMessage = (Message) inFromServer.readObject();
-				System.out.println("Recieved message");
-				updateTextFile(receivedMessage.getTo(), receivedMessage.getText());
-				setUsers(receivedMessage.getUsers());
-				
-				// Sending
-				if (!MessageToSend.isEmpty())
-				{
-					System.out.println("Message sent!");
-					outToServer.writeObject(MessageToSend.removeFirst());
-				}
+				Thread.sleep(50);
 			}
-			catch (ClassNotFoundException | IOException e)
+			catch (InterruptedException e)
 			{
 				e.printStackTrace();
 			}
 		}
 	}
 	
-	public void setUsers(LinkedList<String> users)
+	public void setUsers(LinkedList<String> users) // Ran every time a message is received
 	{
 		
 	}
@@ -130,7 +138,7 @@ public class Client extends Thread
 	{
 		text = text.replace("/add ", "");
 		
-		File file = new File("files/" +ui.getUserName() +"/friends/" + text + ".txt");
+		File file = new File("files/" + ui.getUserName() + "/friends/" + text + ".txt");
 		if (!file.exists())
 		{
 			try
@@ -148,7 +156,7 @@ public class Client extends Thread
 	
 	public void removeFriend(String text)
 	{
-		File file = new File("files/" +ui.getUserName() +"/friends/" + text + ".txt");
+		File file = new File("files/" + ui.getUserName() + "/friends/" + text + ".txt");
 		if (file.exists())
 		{
 			file.delete();
@@ -156,12 +164,12 @@ public class Client extends Thread
 		ui.updateContacts();
 	}
 	
-	public void updateTextFile(String recipient, String text)
+	public void updateTextFile(String file, String text) // Whenever we receive or send new messages
 	{
 		try
 		{
-			System.out.println("Updating text file files/friends/"+recipient+".txt" );
-			writer = new PrintWriter("files/friends/" + recipient + ".txt");
+			System.out.println("Updating text file files/friends/" + file + ".txt");
+			writer = new PrintWriter("files/friends/" + file + ".txt");
 			writer.print(text);
 			
 		}
@@ -171,7 +179,7 @@ public class Client extends Thread
 		}
 	}
 	
-	public void newRecipient(String newRecipient)
+	public void newRecipient(String newRecipient) // For when we switch between conversations using "/send"
 	{
 		// In case we're making friends for once
 		newRecipient = newRecipient.replace("/send ", "/add ");
@@ -186,7 +194,7 @@ public class Client extends Thread
 		try
 		{
 			BufferedReader bufferedReader = new BufferedReader(
-					new FileReader(new File("files/" +ui.getUserName() +"/friends/" + newRecipient + ".txt")));
+					new FileReader(new File("files/" + ui.getUserName() + "/friends/" + newRecipient + ".txt")));
 			for (String line; (line = bufferedReader.readLine()) != null; text += line)
 				;
 			bufferedReader.close();
@@ -215,7 +223,7 @@ public class Client extends Thread
 		}
 		
 		if ((!text.isEmpty() || file != null))
-			MessageToSend.add(new Message(text, file, ui.getUserName(), recipient, null));
+			outputStream.addMessage(new Message(text, file, ui.getUserName(), recipient, null));
 	}
 	
 	public static void main(String[] args)
