@@ -13,6 +13,7 @@ import java.net.UnknownHostException;
 import java.util.LinkedList;
 
 import javax.swing.JFrame;
+import javax.swing.plaf.synth.SynthSeparatorUI;
 
 import server.Message;
 
@@ -94,12 +95,39 @@ public class Client extends Thread
 		inputStream.start();
 	}
 	
+	private void reviveStreams()
+	{
+		if(!outputStream.isAlive()|| !inputStream.isAlive())
+			createSocket();
+		
+		if (!outputStream.isAlive())
+		{
+			System.out.println("Client: Trying to revive outputStream");
+			outputStream = new Outgoing(socket, this);
+			outputStream.start();
+		}
+		
+		if (!inputStream.isAlive())
+		{
+			System.out.println("Client: Trying to revive inputStream");
+			inputStream = new Incoming(socket, this);
+			inputStream.start();
+			
+		}
+	}
+	
 	public void run()
 	{
 		initiate();
 		
 		while (!Thread.interrupted())
-		{
+		{		
+			if (!inputStream.isAlive() || !outputStream.isAlive())
+			{
+				System.out.println("Client: A stream has died!");
+				reviveStreams();
+			}
+			
 			try
 			{
 				Thread.sleep(50);

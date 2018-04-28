@@ -25,7 +25,7 @@ public class ClientHandler extends Thread
 	private LinkedList<String> users; // All users
 	private Message receivedMessage;
 	private Message currentMessageToSend;
-	private String user; // Current user
+	private String user = "UnknownUser"; // Current user
 	private String filepath = "files/clients/";
 	
 	// Connection info

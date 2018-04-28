@@ -12,7 +12,8 @@ public class Incoming extends Thread
 	private Socket socket;
 	
 	/*
-	 * Waits for a message, when one is received, handle it properly, adding it to the right file and updating users
+	 * Waits for a message, when one is received, handle it properly, adding it to
+	 * the right file and updating users
 	 */
 	
 	public Incoming(Socket socket, Client client)
@@ -30,8 +31,9 @@ public class Incoming extends Thread
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
-		}		
+			System.out.println("InputThread: Stream failed!");
+			interrupt();
+		}
 	}
 	
 	public void run()
@@ -54,7 +56,8 @@ public class Incoming extends Thread
 			
 			catch (IOException | ClassNotFoundException e)
 			{
-				e.printStackTrace();
+				System.out.println("InputThread: Failed to receive message!");
+				interrupt();
 			}
 		}
 	}

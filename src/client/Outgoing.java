@@ -34,7 +34,8 @@ public class Outgoing extends Thread
 		}
 		catch (IOException e)
 		{
-			e.printStackTrace();
+			System.out.println("outputThread: Stream failed!");
+			interrupt();
 		}
 	}
 	
@@ -58,7 +59,8 @@ public class Outgoing extends Thread
 			}
 			catch (IOException e)
 			{
-				e.printStackTrace();
+				System.out.println("outputThread: Failed to send message!");
+				interrupt();
 			}
 		}
 	}
